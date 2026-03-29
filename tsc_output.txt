@@ -1,0 +1,4 @@
+src/components/3d/stops/PlanetsAndMoons.tsx(262,22): error TS2339: Property 'techStack' does not exist on type 'Project'.
+src/components/3d/stops/PlanetsAndMoons.tsx(262,48): error TS7006: Parameter 'tech' implicitly has an 'any' type.
+src/components/3d/stops/PlanetsAndMoons.tsx(267,22): error TS2339: Property 'techStack' does not exist on type 'Project'.
+src/components/3d/stops/PlanetsAndMoons.tsx(269,27): error TS2339: Property 'techStack' does not exist on type 'Project'.

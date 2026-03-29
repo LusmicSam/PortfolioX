@@ -1,65 +1,222 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+import { IntroSequence } from "@/components/intro-sequence";
+import { NebulaDashboard } from "@/components/ui/NebulaDashboard";
+import { ComlinkNav } from "@/components/ui/ComlinkNav";
+import { TOTAL_DISTANCE } from "@/components/3d/config";
+
+const SolarSystemCanvas = dynamic(
+  () => import("@/components/3d/SolarSystemCanvas").then((m) => ({ default: m.SolarSystemCanvas })),
+  { ssr: false }
+);
+
+export type CommitEntry = { name: string; size: number; html_url?: string; description?: string };
+
+export default function HomePage() {
+  const [commitData, setCommitData] = useState<CommitEntry[]>([]);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [introComplete, setIntroComplete] = useState(false);
+  const [isWarping, setIsWarping] = useState(false);
+  const [cameraPos, setCameraPos] = useState({ x: 0, y: 0, z: 0 });
+
+  // Smooth scroll target
+  const targetPRef = useRef(0);
+  const currentPRef = useRef(0);
+  const isWarpingRef = useRef(false);
+
+  // We want EXACT 1:1 mapping of scroll pixels to Z coordinates.
+  // We'll set the scroll height to TOTAL_DISTANCE + window height, 
+  // so maxScroll is exactly TOTAL_DISTANCE.
+  const [scrollHeight, setScrollHeight] = useState(TOTAL_DISTANCE + 1000);
+  // Keep a ref so the scroll closure always reads the LATEST scrollHeight
+  // without needing to restart the rAF loop on every resize.
+  const scrollHeightRef = useRef(TOTAL_DISTANCE + 1000);
+
+  useEffect(() => {
+    const updateScrollHeight = () => {
+      const h = TOTAL_DISTANCE + window.innerHeight;
+      setScrollHeight(h);
+      scrollHeightRef.current = h;
+    };
+    updateScrollHeight();
+    window.addEventListener("resize", updateScrollHeight);
+    return () => window.removeEventListener("resize", updateScrollHeight);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/github")
+      .then((r) => r.json())
+      .then((data: { title: string; commitCount?: number; html_url?: string; description?: string }[]) => {
+        if (Array.isArray(data))
+          setCommitData(data.map((d) => ({
+            name: d.title,
+            size: d.commitCount ?? 10,
+            html_url: d.html_url,
+            description: d.description,
+          })));
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!introComplete) return;
+    
+    let frame: number;
+
+    const onScroll = () => {
+      if (isWarpingRef.current) return;
+      // Use scrollHeightRef for the CURRENT height — avoids stale closure bug
+      const maxScroll = scrollHeightRef.current - window.innerHeight;
+      targetPRef.current = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const loop = () => {
+      // Tighter lerp for normal scrolling so it follows the user's sudden stop on trackpad better
+      const ease = isWarpingRef.current ? 0.04 : 0.18;
+      currentPRef.current += (targetPRef.current - currentPRef.current) * ease;
+      
+      if (Math.abs(currentPRef.current - targetPRef.current) < 0.0001) {
+        currentPRef.current = targetPRef.current;
+        if (isWarpingRef.current) {
+          isWarpingRef.current = false;
+          setIsWarping(false);
+        }
+      }
+      
+      setScrollProgress(currentPRef.current);
+      frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [introComplete]);
+
+  // Handle Warp jumps from the Nebula Dashboard
+  const handleWarp = (targetZ: number) => {
+    // targetZ is negative, so targetRatio is math.abs(targetZ) / TOTAL_DISTANCE
+    const targetRatio = Math.abs(targetZ) / TOTAL_DISTANCE;
+    const maxScroll = scrollHeight - window.innerHeight;
+    
+    // Set target
+    targetPRef.current = targetRatio;
+    isWarpingRef.current = true;
+    setIsWarping(true);
+
+    // Also update native scroll position so the user's scrollbar matches the jump
+    window.scrollTo({
+      top: targetRatio * maxScroll,
+      behavior: "auto" // Jump instantly in native, but our rAF smooths it in 3D
+    });
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {/* ── Intro sequence (video + loading) ── */}
+      {!introComplete && (
+        <IntroSequence onComplete={() => setIntroComplete(true)} />
+      )}
+
+      <AnimatePresence>
+        {introComplete && scrollProgress < 0.0001 && (
+          <NebulaDashboard 
+            visible={true} 
+            onWarp={handleWarp} 
+          />
+        )}
+      </AnimatePresence>
+      
+      {/* ── Comlink Persistent Navigation ── */}
+      <ComlinkNav
+        visible={introComplete && scrollProgress >= 0.0001}
+        onWarp={handleWarp}
+      />
+
+      {/* ── Main 3D Portfolio ── */}
+      <div
+        className="fixed inset-0 z-0 bg-[#0a0715] overflow-hidden hide-scrollbar"
+        style={{
+          opacity: introComplete ? 1 : 0,
+          transition: "opacity 0.8s ease",
+          pointerEvents: introComplete ? "auto" : "none",
+        }}
+      >
+        <SolarSystemCanvas 
+          scrollT={scrollProgress} 
+          commitData={commitData} 
+          isWarping={isWarping} 
+          setCameraPos={setCameraPos}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </div>
+
+      {/* Very long container to force native scrollbar */}
+      <div
+        className="relative z-10 w-full"
+        style={{
+          height: `${scrollHeight}px`,
+          pointerEvents: "none",
+          opacity: introComplete ? 1 : 0,
+          transition: "opacity 0.8s ease",
+        }}
+      >
+        {/* Scroll hint disappears when scrolling down */}
+        <div
+          className="fixed bottom-10 right-10 flex flex-col items-center gap-2 pointer-events-none transition-opacity duration-1000"
+          style={{
+            opacity: introComplete && scrollProgress < 0.02 ? 1 : 0,
+            textShadow: "0 0 20px rgba(160, 102, 255, 0.8)",
+          }}
+        >
+          <div className="h-10 w-[1px] bg-gradient-to-b from-transparent to-[#a066ff] animate-pulse mb-2" />
+          <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#a066ff]">
+            Scroll to Explore
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Right side scroll progress bar */}
+        <div className="fixed right-6 top-1/2 -translate-y-1/2 h-[400px] w-0.5 rounded-full bg-white/10 hidden md:block">
+          <div
+            className="absolute top-0 w-full rounded-full transition-all duration-100"
+            style={{
+              height: `${scrollProgress * 100}%`,
+              background: "linear-gradient(to bottom, #a066ff, #58d8ff)",
+              boxShadow: "0 0 16px rgba(160, 102, 255, 0.6)",
+            }}
+          />
         </div>
-      </main>
-    </div>
+
+        {/* --- DEBUG SCROLL OVERLAY --- */}
+        <div className="fixed top-4 left-4 z-[100] px-3 py-1.5 rounded-lg bg-black/80 border border-white/10 backdrop-blur-md font-mono text-[10px] text-white/50 flex flex-col gap-1">
+          <div className="flex justify-between gap-4">
+            <span>SCROLL PX</span>
+            <span className="text-[#58d8ff] font-bold">{(scrollProgress * scrollHeight).toFixed(0)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span>PROGRESS</span>
+            <span className="text-[#a066ff] font-bold">{scrollProgress.toFixed(4)}</span>
+          </div>
+          <div className="h-px bg-white/5 my-0.5" />
+          <div className="flex justify-between gap-4">
+            <span>CAM X</span>
+            <span className="text-white/80">{cameraPos.x.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span>CAM Y</span>
+            <span className="text-white/80">{cameraPos.y.toFixed(1)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span>CAM Z</span>
+            <span className="text-white/80">{cameraPos.z.toFixed(1)}</span>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

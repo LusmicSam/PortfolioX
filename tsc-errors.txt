@@ -1,0 +1,14 @@
+src/components/3d/SolarSystemCanvas.tsx(5,40): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/3d/SolarSystemCanvas.tsx(6,33): error TS2307: Cannot find module 'framer-motion' or its corresponding type declarations.
+src/components/3d/SolarSystemCanvas.tsx(147,21): error TS2322: Type '{ children: Element[]; disableNormalPass: true; }' is not assignable to type 'IntrinsicAttributes & EffectComposerProps & RefAttributes<EffectComposer>'.
+  Property 'disableNormalPass' does not exist on type 'IntrinsicAttributes & EffectComposerProps & RefAttributes<EffectComposer>'. Did you mean 'enableNormalPass'?
+src/components/3d/stops/BlackHole.tsx(3,22): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/3d/stops/MissionControl.tsx(3,22): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/3d/stops/PlanetsAndMoons.tsx(3,33): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/3d/stops/SpaceStation.tsx(3,22): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/3d/stops/WormholeTimeline.tsx(3,33): error TS2307: Cannot find module '@react-three/drei' or its corresponding type declarations.
+src/components/ui/ComlinkNav.tsx(3,41): error TS2307: Cannot find module 'framer-motion' or its corresponding type declarations.
+src/components/ui/Modals.tsx(3,41): error TS2307: Cannot find module 'framer-motion' or its corresponding type declarations.
+src/components/ui/Modals.tsx(69,19): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/ui/Modals.tsx(379,18): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/ui/NebulaDashboard.tsx(3,24): error TS2307: Cannot find module 'framer-motion' or its corresponding type declarations.
