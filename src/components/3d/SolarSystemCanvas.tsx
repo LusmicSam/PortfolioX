@@ -243,11 +243,13 @@ export function SolarSystemCanvas({
   scrollT = 0,
   commitData = [],
   isWarping = false,
+  targetX = 0,
   setCameraPos,
 }: {
   scrollT?: number;
   commitData?: CommitEntry[];
   isWarping?: boolean;
+  targetX?: number;
   setCameraPos?: (pos: { x: number; y: number; z: number }) => void;
 }) {
   // ── State ──────────────────────────────────────────────────

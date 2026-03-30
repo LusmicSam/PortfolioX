@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Project } from "@/data/portfolio";
+import { Project, profile } from "@/data/portfolio";
 
 export function HoverCard({ p, pos }: { p: Project; pos: [number, number] }) {
   return (
@@ -53,7 +53,6 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-12 pointer-events-auto"
       onClick={onClose}
     >
-      {/* Dark Overlay with Scanlines */}
       <div 
         className="absolute inset-0 bg-black/80 pointer-events-none mix-blend-multiply" 
         style={{
@@ -74,13 +73,11 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
           boxShadow: `0 0 100px ${p.planetColor}30, inset 0 0 50px rgba(0,0,0,0.9)`,
         }}
       >
-        {/* Glow Top Accent Line */}
         <div 
           className="absolute top-0 left-0 right-0 h-[2px]" 
           style={{ background: `linear-gradient(90deg, transparent, ${p.planetColor}, transparent)` }} 
         />
         
-        {/* Tech Corner Accents */}
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 opacity-50" style={{ borderColor: p.planetColor }} />
         <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 opacity-50" style={{ borderColor: p.planetColor }} />
         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 opacity-50" style={{ borderColor: p.planetColor }} />
@@ -131,7 +128,6 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
 
           <div className="flex flex-col h-full">
             <div className="relative rounded-lg aspect-video bg-black flex items-center justify-center border overflow-hidden flex-grow" style={{ borderColor: `${p.planetColor}20` }}>
-              {/* Media Content */}
               {p.media ? (
                 <div className="absolute inset-0 z-0">
                   {p.media.type === "video" ? (
@@ -156,7 +152,6 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
                       className="w-full h-full object-cover opacity-80" 
                     />
                   )}
-                  {/* Fallback for video errors */}
                   <div className="absolute inset-0 hidden flex-col items-center justify-center bg-black/60 z-10">
                     <p className="text-[10px] text-red-400 font-mono uppercase tracking-[0.2em] mb-2">[ DATA_CORRUPTION_DETECTED ]</p>
                     <p className="text-[11px] text-white/40 font-mono text-center px-4 italic">"Visual telemetry link failed. Re-routing to secondary data buffer..."</p>
@@ -175,11 +170,9 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
                 </div>
               )}
 
-              {/* Holographic Overlays */}
               <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-transparent z-10 pointer-events-none" />
               <div className="absolute inset-0 opacity-[0.05] z-20 pointer-events-none" style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "30px 30px" }} />
               
-              {/* Corner Scanning Brackets */}
               <div className="absolute top-4 left-4 w-4 h-4 border-t border-l opacity-40" style={{ borderColor: p.planetColor }} />
               <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r opacity-40" style={{ borderColor: p.planetColor }} />
             </div>
@@ -203,6 +196,180 @@ export function ProjectModal({ p, onClose }: { p: Project; onClose: () => void }
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   STATION ABOUT PANEL — multi-page About Me shown when docking space station
+   ───────────────────────────────────────────────────────────────────────── */
+const STATION_TABS = ["Identity", "Personality", "Skills", "Beyond Code", "Connect"] as const;
+type StationTab = (typeof STATION_TABS)[number];
+
+function StationAboutPanel() {
+  const [tab, setTab] = useState<StationTab>("Identity");
+
+  const competencies = [
+    { skill: "Backend Systems (FastAPI · Django · gRPC)", pct: 92 },
+    { skill: "AI / ML (PyTorch · OpenCV · LangChain)", pct: 88 },
+    { skill: "DevOps · Cloud (Docker · K8s · OCI)", pct: 80 },
+    { skill: "3D / Realtime (Three.js · WebGL · CUDA)", pct: 74 },
+    { skill: "Blockchain / Web3 (IPFS · Ethereum · FastAPI)", pct: 70 },
+  ];
+
+  return (
+    <div className="w-full text-left">
+      <div className="flex items-center gap-4 mb-6">
+        <div
+          className="w-14 h-14 flex-shrink-0 rounded-2xl flex items-center justify-center text-xl font-black"
+          style={{ background: "radial-gradient(circle at 35% 35%, #c084fc, #6b21a8)", boxShadow: "0 0 30px rgba(160,102,255,0.4)" }}
+        >
+          SP
+        </div>
+        <div>
+          <p className="text-[9px] font-mono tracking-[0.4em] text-purple-400/70 uppercase">SYS://ORBITAL-STATION // GAMMA-01</p>
+          <h2 className="text-2xl font-black text-white">{profile.name}</h2>
+          <p className="text-xs font-mono text-purple-300/80">{profile.role} · {profile.location}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-1 mb-6 bg-white/5 rounded-xl p-1">
+        {STATION_TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className="flex-1 text-[10px] font-mono tracking-wider uppercase py-2 rounded-lg transition-all"
+            style={
+              tab === t
+                ? { background: "rgba(160,102,255,0.25)", color: "#c084fc", border: "1px solid rgba(160,102,255,0.4)" }
+                : { color: "rgba(255,255,255,0.35)", border: "1px solid transparent" }
+            }
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-y-auto pr-1"
+          style={{ maxHeight: "380px" }}
+        >
+          {tab === "Identity" && (
+            <div className="space-y-5">
+              <div className="p-5 rounded-2xl relative overflow-hidden" style={{ background: "rgba(160,102,255,0.07)", border: "1px solid rgba(160,102,255,0.2)" }}>
+                <span className="absolute top-3 right-4 text-4xl opacity-10">🔭</span>
+                <p className="text-[9px] font-mono tracking-[0.4em] text-purple-400/60 uppercase mb-1">Core Philosophy</p>
+                <p className="text-sm font-black text-white italic mb-2">&ldquo;In a sea of &lsquo;how&rsquo;, I am the one asking the &lsquo;Deep Why&rsquo;.&rdquo;</p>
+                <p className="text-xs text-white/60 leading-relaxed">{profile.subheadline}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Location", value: "Punjab, India 🇮🇳" },
+                  { label: "Status", value: "Open to Collaboration" },
+                  { label: "Research", value: "ICISESSC 2026 · Published" },
+                  { label: "Education", value: "B.Tech CS · LPU 2027" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <p className="text-[8px] font-mono tracking-[0.3em] text-purple-400/60 uppercase mb-1">{label}</p>
+                    <p className="text-xs font-semibold text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {[{ val: "250+", label: "LeetCode" }, { val: "20+", label: "Certifications" }, { val: "6+", label: "Prod Projects" }].map(({ val, label }) => (
+                  <div key={label} className="text-center p-4 rounded-2xl" style={{ background: "rgba(160,102,255,0.08)", border: "1px solid rgba(160,102,255,0.2)" }}>
+                    <p className="text-2xl font-black text-purple-300">{val}</p>
+                    <p className="text-[9px] font-mono text-white/40 mt-1 uppercase tracking-widest">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === "Personality" && (
+            <div className="space-y-5">
+              <div className="p-5 rounded-2xl" style={{ background: "rgba(160,102,255,0.08)", border: "1px solid rgba(160,102,255,0.25)" }}>
+                <p className="text-[9px] font-mono tracking-[0.4em] text-purple-400/60 uppercase mb-2">MBTI Type</p>
+                <div className="flex items-baseline gap-3 mb-3">
+                  <p className="text-4xl font-black text-purple-300">{profile.mbti}</p>
+                  <p className="text-xs text-white/50 font-mono">The Logician</p>
+                </div>
+                <p className="text-xs text-white/60 leading-relaxed">{profile.mbtiDesc}</p>
+              </div>
+              <div className="p-5 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-sm text-white/75 leading-relaxed">{profile.personality}</p>
+              </div>
+            </div>
+          )}
+
+          {tab === "Skills" && (
+            <div className="space-y-5">
+              <div className="space-y-3">
+                {competencies.map(({ skill, pct }) => (
+                  <div key={skill}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-white/70">{skill}</span>
+                      <span className="text-xs text-purple-400 font-mono">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <motion.div className="h-full bg-purple-500" initial={{ width: 0 }} animate={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {profile.softSkills.map((s) => (
+                  <span key={s} className="px-3 py-1 rounded-full text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === "Beyond Code" && (
+            <div className="grid grid-cols-2 gap-4">
+              {profile.hobbies.map((h) => (
+                <div key={h.name} className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">{h.icon}</span>
+                    <p className="text-sm font-bold text-white">{h.name}</p>
+                  </div>
+                  <p className="text-[11px] text-white/50 leading-relaxed">{h.desc}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === "Connect" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: "⬡", label: "GitHub", sub: "@LusmicSam", href: profile.github, color: "#ffffff" },
+                  { icon: "in", label: "LinkedIn", sub: "shivam-panjolia", href: profile.linkedin, color: "#0ea5e9" },
+                  { icon: "@", label: "Email", sub: profile.email, href: `mailto:${profile.email}`, color: "#a066ff" },
+                  { icon: "📞", label: "Phone", sub: profile.phone, href: `tel:${profile.phone}`, color: "#3dff99" },
+                ].map(({ icon, label, sub, href, color }) => (
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/40 transition-all">
+                    <span className="text-lg w-8 text-center" style={{ color }}>{icon}</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-white">{label}</p>
+                      <p className="text-[10px] text-white/40 font-mono truncate">{sub}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <a href="/CVG.docx" download className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-black bg-purple-500 hover:bg-purple-400 transition-all">
+                <span>⬇</span> Download Résumé · DOCX
+              </a>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function ArchitecturalModal({ title, type, onClose }: { title: string; type: string; onClose: () => void }) {
   const [formState, setFormState] = useState({ name: "", email: "", message: "", sent: false });
 
@@ -212,71 +379,7 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
   };
 
   const content: Record<string, React.ReactNode> = {
-    station: (
-      <div className="grid md:grid-cols-3 gap-6 text-left">
-        <div className="md:col-span-2 space-y-6">
-          <div>
-            <p className="text-[10px] font-mono tracking-[0.3em] text-[#a066ff] uppercase mb-2">Commander Profile</p>
-            <h3 className="text-3xl font-black text-white mb-4">Shivam Panjolia</h3>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Backend & AI systems engineer crafting products where <span className="text-[#a066ff] font-semibold">intelligence meets scale</span>. I design and ship full-stack platforms — from secure verification pipelines and real-time proctoring to distributed storage engines and edge AI runtimes.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Location", value: "Punjab, India 🇮🇳" },
-              { label: "Role", value: "Backend · AI · Systems" },
-              { label: "Research", value: "ICISESSC 2026 Published" },
-              { label: "Languages", value: "Python · C++ · Java · SQL" },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-lg border border-white/10 bg-white/5 p-3">
-                <p className="text-[9px] font-mono tracking-[0.2em] text-[#a066ff] uppercase mb-1">{label}</p>
-                <p className="text-sm font-semibold text-white">{value}</p>
-              </div>
-            ))}
-          </div>
-          <div>
-            <p className="text-[10px] font-mono tracking-[0.3em] text-slate-400 uppercase mb-3">Core Competencies</p>
-            {[
-              { skill: "Backend Systems (FastAPI · Django · gRPC)", pct: 92 },
-              { skill: "AI / ML (PyTorch · OpenCV · LangChain)", pct: 88 },
-              { skill: "DevOps · Cloud (Docker · K8s · OCI)", pct: 80 },
-              { skill: "3D / Realtime (Three.js · WebGL · CUDA)", pct: 74 },
-            ].map(({ skill, pct }) => (
-              <div key={skill} className="mb-3">
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs text-slate-300">{skill}</span>
-                  <span className="text-xs text-[#a066ff] font-mono">{pct}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#6b2fff,#a066ff)" }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div className="rounded-xl border border-[#a066ff]/30 bg-[#a066ff]/10 p-5 text-center">
-            <p className="text-4xl font-black text-[#a066ff]">250+</p>
-            <p className="text-xs text-slate-400 font-mono mt-1 tracking-widest uppercase">LeetCode Solved</p>
-          </div>
-          <div className="rounded-xl border border-[#58d8ff]/30 bg-[#58d8ff]/10 p-5 text-center">
-            <p className="text-4xl font-black text-[#58d8ff]">6+</p>
-            <p className="text-xs text-slate-400 font-mono mt-1 tracking-widest uppercase">Production Projects</p>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-[9px] font-mono tracking-[0.25em] text-slate-400 uppercase mb-3">Currently Into</p>
-            {["🔭 Deep Learning", "🎮 Voxel Engines", "🛰️ Distributed Sys", "📡 Edge AI"].map(i => (
-              <p key={i} className="text-xs text-slate-300 mb-1.5">{i}</p>
-            ))}
-          </div>
-          <div className="flex gap-3">
-            <a href="https://github.com/LusmicSam" target="_blank" className="flex-1 text-center text-xs font-bold py-2.5 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors">GitHub</a>
-            <a href="https://www.linkedin.com/in/shivam-panjolia" target="_blank" className="flex-1 text-center text-xs font-bold py-2.5 rounded-lg bg-[#0077b5] text-white hover:opacity-90 transition-opacity">LinkedIn</a>
-          </div>
-        </div>
-      </div>
-    ),
+    station: <StationAboutPanel />,
 
     blackhole: (
       <div className="flex flex-col items-center gap-8 text-center">
@@ -307,7 +410,6 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
           <span className="relative z-10">⬇ Download Résumé</span>
           <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
         </a>
-        <p className="text-[10px] font-mono text-slate-500 tracking-widest">PDF · Updated March 2025 · English</p>
       </div>
     ),
 
@@ -321,10 +423,6 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
               ))}
               <div className="absolute top-1/2 left-1/2 w-1/2 h-[2px] origin-left -translate-y-1/2"
                 style={{ background: "linear-gradient(90deg,#00ff44,transparent)", animation: "spin 3s linear infinite" }} />
-              {["GitHub", "LinkedIn", "Email"].map((s, i) => (
-                <div key={s} className="absolute w-2.5 h-2.5 rounded-full bg-[#00ff44]"
-                  style={{ top: `${20 + i * 28}%`, left: `${25 + i * 20}%`, boxShadow: "0 0 10px #00ff44" }} />
-              ))}
             </div>
           </div>
           <div className="space-y-2">
@@ -339,11 +437,6 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
               </div>
             ))}
           </div>
-          <div className="flex gap-3">
-            {[{ icon: "⬡", href: "https://github.com/LusmicSam", label: "GH" }, { icon: "in", href: "https://www.linkedin.com/in/shivam-panjolia", label: "LI" }, { icon: "@", href: "mailto:shivampanjolia8@gmail.com", label: "EM" }].map(({ icon, href }) => (
-              <a key={href} href={href} target="_blank" className="flex-1 flex items-center justify-center h-10 rounded-lg border border-[#00ff44]/30 text-[#00ff44] text-sm font-mono hover:bg-[#00ff44]/10 transition-colors">{icon}</a>
-            ))}
-          </div>
         </div>
         <div className="md:col-span-3">
           <p className="text-[10px] font-mono tracking-[0.3em] text-[#00ff44] uppercase mb-4">_Transmission Interface</p>
@@ -351,35 +444,16 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
             <div className="flex flex-col items-center justify-center h-64 gap-4">
               <div className="text-5xl">🛸</div>
               <p className="text-[#00ff44] font-mono font-bold tracking-widest uppercase">Signal transmitted!</p>
-              <p className="text-slate-400 text-sm">I'll respond within 24 hours.</p>
               <button onClick={() => setFormState(s => ({ ...s, sent: false }))} className="text-xs font-mono text-slate-500 hover:text-white transition-colors">Send another</button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[9px] font-mono tracking-[0.25em] text-[#00ff44]/70 uppercase mb-1.5">Identification</label>
-                  <input required value={formState.name} onChange={e => setFormState(s => ({ ...s, name: e.target.value }))}
-                    type="text" placeholder="Your name..."
-                    className="w-full bg-[#001a00]/80 border border-[#00ff44]/30 rounded-lg px-4 py-3 text-white text-sm font-mono placeholder-slate-600 focus:outline-none focus:border-[#00ff44] transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-mono tracking-[0.25em] text-[#00ff44]/70 uppercase mb-1.5">Comm Frequency</label>
-                  <input required value={formState.email} onChange={e => setFormState(s => ({ ...s, email: e.target.value }))}
-                    type="email" placeholder="your@email.com"
-                    className="w-full bg-[#001a00]/80 border border-[#00ff44]/30 rounded-lg px-4 py-3 text-white text-sm font-mono placeholder-slate-600 focus:outline-none focus:border-[#00ff44] transition-colors" />
-                </div>
+                <input required value={formState.name} onChange={e => setFormState(s => ({ ...s, name: e.target.value }))} type="text" placeholder="Name" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs" />
+                <input required value={formState.email} onChange={e => setFormState(s => ({ ...s, email: e.target.value }))} type="email" placeholder="Email" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs" />
               </div>
-              <div>
-                <label className="block text-[9px] font-mono tracking-[0.25em] text-[#00ff44]/70 uppercase mb-1.5">Transmission</label>
-                <textarea required value={formState.message} onChange={e => setFormState(s => ({ ...s, message: e.target.value }))}
-                  rows={5} placeholder="Encode your message here..."
-                  className="w-full bg-[#001a00]/80 border border-[#00ff44]/30 rounded-lg px-4 py-3 text-white text-sm font-mono placeholder-slate-600 focus:outline-none focus:border-[#00ff44] transition-colors resize-none" />
-              </div>
-              <button type="submit"
-                className="w-full py-3.5 rounded-lg font-black uppercase tracking-[0.25em] text-sm text-black transition-all hover:opacity-90 hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg,#00ff44,#00aa33)", boxShadow: "0 0 30px rgba(0,255,68,0.3)" }}
-              >◈ Transmit Signal ◈</button>
+              <textarea required value={formState.message} onChange={e => setFormState(s => ({ ...s, message: e.target.value }))} rows={4} placeholder="Message" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs resize-none" />
+              <button type="submit" className="w-full py-3 rounded-lg font-black uppercase tracking-widest text-xs text-black bg-[#00ff44] hover:brightness-110 transition-all">Transmit Signal</button>
             </form>
           )}
         </div>
@@ -387,9 +461,9 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
     ),
 
     moon: (
-      <div className="text-center">
+      <div className="text-center p-8">
         <p className="text-[10px] font-mono tracking-[0.3em] text-[#66aaff] uppercase mb-4">Achievement Unlocked</p>
-        <p className="text-lg text-slate-300">{title}</p>
+        <h3 className="text-2xl font-black text-white">{title}</h3>
       </div>
     ),
   };
@@ -421,9 +495,7 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
           boxShadow: `0 0 80px ${accent}25, inset 0 0 40px rgba(0,0,0,0.6)`,
         }}
       >
-        {/* Glow top edge */}
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}80, transparent)` }} />
-        {/* Close */}
         <button onClick={onClose} className="absolute right-5 top-5 p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
         </button>

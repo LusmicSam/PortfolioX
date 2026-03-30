@@ -20,6 +20,7 @@ export default function HomePage() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [introComplete, setIntroComplete] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
+  const [targetX, setTargetX] = useState(0);
   const [cameraPos, setCameraPos] = useState({ x: 0, y: 0, z: 0 });
 
   // Smooth scroll target
@@ -100,13 +101,14 @@ export default function HomePage() {
   }, [introComplete]);
 
   // Handle Warp jumps from the Nebula Dashboard
-  const handleWarp = (targetZ: number) => {
+  const handleWarp = (targetZ: number, x: number = 0) => {
     // targetZ is negative, so targetRatio is math.abs(targetZ) / TOTAL_DISTANCE
     const targetRatio = Math.abs(targetZ) / TOTAL_DISTANCE;
     const maxScroll = scrollHeight - window.innerHeight;
     
     // Set target
     targetPRef.current = targetRatio;
+    setTargetX(x);
     isWarpingRef.current = true;
     setIsWarping(true);
 
@@ -152,6 +154,7 @@ export default function HomePage() {
           scrollT={scrollProgress} 
           commitData={commitData} 
           isWarping={isWarping} 
+          targetX={targetX}
           setCameraPos={setCameraPos}
         />
       </div>
