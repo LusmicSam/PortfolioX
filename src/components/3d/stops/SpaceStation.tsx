@@ -58,7 +58,7 @@ function ProceduralStation() {
 }
 
 function StationModel({ hovered }: { hovered: boolean }) {
-  const { scene } = useGLTF("/space_station-compressed.glb");
+  const { scene } = useGLTF("/space_station-v2.glb");
   const modelRef = useRef<THREE.Group>(null);
 
   // Traverse to improve materials once loaded
