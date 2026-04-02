@@ -54,8 +54,8 @@ export const profile = {
     "250+ LeetCode solved",
     "Production Startup Engineer (Since June 2025)",
     "First research publication (March 10)",
-    "OCI DevOps Professional & AI Foundation Associate",
-    "20+ Certifications (Coursera, Udemy, NPTEL Cloud)",
+    "3 Professional Certifications (OCI DevOps, OCI AI)",
+    "30+ Certificates (Coursera, Udemy, NPTEL Cloud)",
   ],
   education: [
     {
@@ -94,11 +94,6 @@ export const profile = {
       name: "Creative Writing",
       desc: "I build fictional universes with complex internal logic — world-building, lore systems, political structures. Think hard sci-fi meets epic fantasy.",
       icon: "✍️",
-    },
-    {
-      name: "Chess",
-      desc: "Strategic thinking translated to the board. I appreciate the depth of the endgame.",
-      icon: "♟️",
     },
     {
       name: "Competitive Programming",

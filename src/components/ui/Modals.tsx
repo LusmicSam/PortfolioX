@@ -359,8 +359,8 @@ function StationAboutPanel() {
                   </a>
                 ))}
               </div>
-              <a href="/CVG.docx" download className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-black bg-purple-500 hover:bg-purple-400 transition-all">
-                <span>⬇</span> Download Résumé · DOCX
+              <a href="/CVG.pdf" download className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-black bg-purple-500 hover:bg-purple-400 transition-all">
+                <span>⬇</span> Download Résumé · PDF
               </a>
             </div>
           )}
@@ -371,11 +371,25 @@ function StationAboutPanel() {
 }
 
 export function ArchitecturalModal({ title, type, onClose }: { title: string; type: string; onClose: () => void }) {
-  const [formState, setFormState] = useState({ name: "", email: "", message: "", sent: false });
+  const [formState, setFormState] = useState({ name: "", email: "", message: "", sent: false, error: false, sending: false });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormState(s => ({ ...s, sent: true }));
+    setFormState(s => ({ ...s, sending: true, error: false }));
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: formState.name, email: formState.email, message: formState.message }),
+      });
+      if (res.ok) {
+        setFormState({ name: "", email: "", message: "", sent: true, sending: false, error: false });
+      } else {
+        setFormState(s => ({ ...s, sending: false, error: true }));
+      }
+    } catch {
+      setFormState(s => ({ ...s, sending: false, error: true }));
+    }
   };
 
   const content: Record<string, React.ReactNode> = {
@@ -403,7 +417,7 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
           ))}
         </div>
         <a
-          href="/resume.pdf" download
+          href="/CVG.pdf" download
           className="relative overflow-hidden group px-10 py-4 rounded-full font-black uppercase tracking-[0.25em] text-black text-sm"
           style={{ background: "linear-gradient(135deg,#ff9944,#ff5500)", boxShadow: "0 0 40px rgba(255,85,0,0.5)" }}
         >
@@ -452,8 +466,11 @@ export function ArchitecturalModal({ title, type, onClose }: { title: string; ty
                 <input required value={formState.name} onChange={e => setFormState(s => ({ ...s, name: e.target.value }))} type="text" placeholder="Name" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs" />
                 <input required value={formState.email} onChange={e => setFormState(s => ({ ...s, email: e.target.value }))} type="email" placeholder="Email" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs" />
               </div>
-              <textarea required value={formState.message} onChange={e => setFormState(s => ({ ...s, message: e.target.value }))} rows={4} placeholder="Message" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs resize-none" />
-              <button type="submit" className="w-full py-3 rounded-lg font-black uppercase tracking-widest text-xs text-black bg-[#00ff44] hover:brightness-110 transition-all">Transmit Signal</button>
+              <textarea required value={formState.message} onChange={e => setFormState(s => ({ ...s, message: e.target.value }))} rows={4} placeholder="Message" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white font-mono text-xs resize-none" disabled={formState.sending} />
+              {formState.error && <p className="text-[10px] text-red-500 font-mono tracking-widest uppercase">Transmission failed. Retry.</p>}
+              <button type="submit" disabled={formState.sending} className="w-full py-3 rounded-lg font-black uppercase tracking-widest text-xs text-black transition-all" style={{ backgroundColor: formState.sending ? '#007722' : '#00ff44', cursor: formState.sending ? 'wait' : 'pointer', filter: formState.sending ? 'brightness(0.7)' : 'none' }}>
+                {formState.sending ? 'Transmitting...' : 'Transmit Signal'}
+              </button>
             </form>
           )}
         </div>

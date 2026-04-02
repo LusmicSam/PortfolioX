@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface IntroSequenceProps {
   onComplete: () => void;
+  onSimple: () => void;
 }
 
 // Typing animation hook
@@ -51,11 +52,11 @@ const LOAD_STEPS = [
   { label: "Universe ready. Entering orbit…",   pct: 100 },
 ];
 
-export function IntroSequence({ onComplete }: IntroSequenceProps) {
+export function IntroSequence({ onComplete, onSimple }: IntroSequenceProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Phase states
-  const [phase, setPhase] = useState<"video" | "flash" | "loading" | "done">("video");
+  const [phase, setPhase] = useState<"video" | "flash" | "loading" | "choice" | "done">("video");
 
   // Video-phase UI
   const [showHud, setShowHud] = useState(false);
@@ -150,14 +151,8 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
           if (step < LOAD_STEPS.length) {
             setTimeout(advance, 220 + Math.random() * 180);
           } else {
-            // All done → fade out
-            setTimeout(() => {
-              setFadeOut(true);
-              setTimeout(() => {
-                setPhase("done");
-                onComplete();
-              }, 700);
-            }, 500);
+            // All done → show choice screen
+            setTimeout(() => setPhase("choice"), 400);
           }
         }
       }, 14);
@@ -165,6 +160,22 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
 
     advance();
   }, [phase, onComplete]);
+
+  const handleChoose3D = () => {
+    setFadeOut(true);
+    setTimeout(() => {
+      setPhase("done");
+      onComplete();
+    }, 600);
+  };
+
+  const handleChooseSimple = () => {
+    setFadeOut(true);
+    setTimeout(() => {
+      setPhase("done");
+      onSimple();
+    }, 600);
+  };
 
   if (phase === "done") return null;
 
@@ -292,6 +303,112 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* ═══ CHOICE PHASE ═══ */}
+      {phase === "choice" && (
+        <div
+          className="absolute inset-0 bg-white flex flex-col"
+          style={{ animation: "fadeInWhite 0.3s ease forwards" }}
+        >
+          {/* Top bar */}
+          <div className="w-full h-1" style={{ background: `linear-gradient(90deg,#a066ff,#58d8ff)` }} />
+
+          <div className="flex flex-col lg:flex-row w-full max-w-6xl mx-auto flex-1 px-8 py-12 gap-12">
+            {/* ── LEFT: bio ── */}
+            <div className="flex flex-col justify-center flex-1 gap-6">
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.5em] uppercase mb-2" style={{ color: "#a066ff" }}>
+                  Orbital ID — COMMANDER
+                </p>
+                <h1 className="font-black leading-none" style={{ fontSize: "clamp(2.5rem,6vw,5rem)", color: "#0a0715", letterSpacing: "-0.02em" }}>
+                  Shivam
+                  <br />
+                  <span style={{ color: "#a066ff" }}>Panjolia</span>
+                </h1>
+                <p className="font-mono mt-4" style={{ color: "#555", fontSize: "clamp(0.75rem,1.5vw,1rem)", letterSpacing: "0.12em" }}>
+                  Backend &nbsp;·&nbsp; AI &nbsp;·&nbsp; Systems Engineer
+                </p>
+              </div>
+              <p style={{ color: "#333", fontSize: "clamp(0.85rem,1.5vw,1.1rem)", lineHeight: 1.7, maxWidth: 480 }}>
+                I build reliable systems where{" "}
+                <span className="font-bold" style={{ color: "#a066ff" }}>intelligence meets scale</span>
+                &nbsp;— from secure verification pipelines and edge AI runtimes to distributed storage
+                engines and immersive 3D portfolios.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { label: "LeetCode", value: "250+", color: "#a066ff" },
+                  { label: "Projects", value: "6+", color: "#58d8ff" },
+                  { label: "Paper", value: "ICISESSC 2026", color: "#ff8c6b" },
+                  { label: "Certs", value: "OCI × 2", color: "#3dff99" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="rounded-full px-4 py-1.5 border" style={{ borderColor: color + "40", background: color + "0f" }}>
+                    <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: "#888" }}>{label}&nbsp;</span>
+                    <span className="font-black text-sm" style={{ color }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {["Python", "C++", "PyTorch", "FastAPI", "Docker", "Three.js", "LangChain", "gRPC"].map((t) => (
+                  <span key={t} className="rounded px-2.5 py-1 font-mono text-[10px] tracking-widest" style={{ background: "#f0eeff", color: "#6b2fff" }}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* ── RIGHT: choice ── */}
+            <div className="flex flex-col justify-center gap-5 lg:w-80" style={{ borderLeft: "1px solid #e5e5e5", paddingLeft: "3rem" }}>
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.4em] uppercase mb-2" style={{ color: "#a066ff" }}>
+                  Universe Ready
+                </p>
+                <p className="text-2xl font-black" style={{ color: "#0a0715" }}>How would you like to explore?</p>
+                <p className="text-sm mt-2" style={{ color: "#888" }}>Choose your experience mode.</p>
+              </div>
+
+              {/* Option A — Simple */}
+              <button
+                onClick={handleChooseSimple}
+                className="group relative overflow-hidden flex flex-col items-start gap-1.5 w-full text-left px-5 py-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg"
+                style={{ borderColor: "#a066ff40", background: "#f8f5ff" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#a066ff"; e.currentTarget.style.background = "#ede8ff"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#a066ff40"; e.currentTarget.style.background = "#f8f5ff"; }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">📄</span>
+                  <span className="font-black text-base" style={{ color: "#0a0715" }}>Simple Portfolio</span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: "#666" }}>
+                  Fast, clean, no 3D. Browse projects, skills and contact — instantly.
+                </p>
+                <span className="text-[10px] font-mono uppercase tracking-widest mt-1" style={{ color: "#a066ff" }}>Recommended for slow devices →</span>
+              </button>
+
+              {/* Option B — 3D */}
+              <button
+                onClick={handleChoose3D}
+                className="group relative overflow-hidden flex flex-col items-start gap-1.5 w-full text-left px-5 py-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-xl"
+                style={{ borderColor: "transparent", background: "linear-gradient(135deg, #a066ff, #58d8ff)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🚀</span>
+                  <span className="font-black text-base text-white">Explore the Universe</span>
+                </div>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  The full immersive 3D cosmic journey — planets, wormholes, black holes and more.
+                </p>
+                <span className="text-[10px] font-mono uppercase tracking-widest mt-1 text-white/60">Requires GPU · WebGL →</span>
+              </button>
+
+              <p className="font-mono italic text-center" style={{ fontSize: "0.62rem", color: "#bbb", letterSpacing: "0.05em" }}>
+                &ldquo;The universe is under no obligation to make sense to you.&rdquo;
+                <br /><span style={{ color: "#a066ff" }}>— Neil deGrasse Tyson</span>
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

@@ -10,7 +10,6 @@ import {
   EffectComposer,
   Bloom,
   ChromaticAberration,
-  Noise,
   Vignette,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
@@ -45,11 +44,13 @@ const SCENE_BG = new THREE.Color("#0a0715");
 function SceneBackground() {
   const { scene, gl } = useThree();
   scene.background = SCENE_BG;
-  // Reset clear color every frame with very high negative priority
-  // so it always runs BEFORE the EffectComposer's render passes.
+  gl.setClearColor(SCENE_BG, 1);
+  // Only reset if someone overrides it (rare) — not every frame
   useFrame(() => {
-    scene.background = SCENE_BG;
-    gl.setClearColor(SCENE_BG, 1);
+    if (scene.background !== SCENE_BG) {
+      scene.background = SCENE_BG;
+      gl.setClearColor(SCENE_BG, 1);
+    }
   }, -100);
   return null;
 }
@@ -115,7 +116,7 @@ function WarpDust({
   scrollT: number;
   isWarping: boolean;
 }) {
-  const count = 2000;
+  const count = 800;
   const pointsRef = useRef<THREE.Points>(null);
   const lastScrollT = useRef(scrollT);
   const scrollSpeed = useRef(0);
@@ -147,7 +148,7 @@ function WarpDust({
     const effectiveSpeed = 0.2 + scrollSpeed.current + warpBoost;
 
     // Skip update when barely moving and not warping
-    if (effectiveSpeed < 0.5 && !isWarping) return;
+    if (effectiveSpeed < 0.3 && !isWarping) return;
 
     const pos = pointsRef.current.geometry.attributes.position
       .array as Float32Array;
@@ -208,13 +209,12 @@ function DynamicEffects({ isWarping }: { isWarping: boolean }) {
         intensity={bloomIntensity}
         luminanceThreshold={0.2}
         luminanceSmoothing={0.9}
-        height={512}
+        height={256}
       />
       <ChromaticAberration
         offset={caOffset}
         blendFunction={BlendFunction.NORMAL}
       />
-      <Noise opacity={0.012} />
       <Vignette offset={0.05} darkness={0.8} />
     </EffectComposer>
   );
@@ -263,12 +263,21 @@ export function SolarSystemCanvas({
     type: string;
     x?: number;
   } | null>(null);
-  const [activeBranchX, setActiveBranchX] = useState(0);
+  
+  // Single source of truth for the camera's X target
+  const [activeBranchX, setActiveBranchX] = useState(targetX || 0);
+
   const [selectedSkillCluster, setSelectedSkillCluster] = useState<{
     cluster: typeof skillClusters[number];
     color: string;
     icon: string;
   } | null>(null);
+
+  // Unconditionally sync incoming targetX (from ComlinkNav / Dashboard) to activeBranchX
+  // We no longer rely on isWarping (which can fail if z-distance is 0)
+  useEffect(() => {
+    setActiveBranchX(targetX || 0);
+  }, [targetX]);
 
   // Zone icons map (matches CLUSTER_ZONE_CONFIG order)
   const ZONE_ICONS = ["</>", "🧠", "⚙️", "🌐"];
@@ -287,6 +296,7 @@ export function SolarSystemCanvas({
 
   // ── Sync branch X when entering hub zone ───────────────────
   useEffect(() => {
+    if (isWarping) return;
     const stop = isNearStop(hudInfo)
       ? hudInfo
       : isApproaching(hudInfo)
@@ -299,11 +309,14 @@ export function SolarSystemCanvas({
         stop.type === "blackhole" ||
         stop.type === "radar")
     ) {
-      setActiveBranchX(stop.x || 0);
+      // Don't override if user has already actively picked a side
+      if (activeBranchX === 0) {
+          setActiveBranchX(stop.x || 0);
+      }
     } else if (scrollT < 0.85) {
       setActiveBranchX(0);
     }
-  }, [hudInfo, scrollT]);
+  }, [hudInfo, scrollT, isWarping, activeBranchX]);
 
   const inHubZone = scrollT >= 0.85 && scrollT <= 0.97;
 

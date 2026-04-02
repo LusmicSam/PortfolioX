@@ -5,7 +5,7 @@ import Image from "next/image";
 import { profile } from "@/data/portfolio";
 
 interface NebulaDashboardProps {
-  onWarp: (targetZ: number) => void;
+  onWarp: (targetZ: number, targetX?: number) => void;
   visible: boolean;
 }
 
@@ -13,12 +13,12 @@ export function NebulaDashboard({ onWarp, visible }: NebulaDashboardProps) {
   if (!visible) return null;
 
   const NAV_SECTIONS = [
-    { label: "Projects", z: -1500, color: "#58d8ff", icon: "◆" },
-    { label: "Skills", z: -6000, color: "#a066ff", icon: "◇" },
-    { label: "About Me", z: -28000, color: "#ff8c6b", icon: "●" },
-    { label: "Timeline", z: -29000, color: "#3dff99", icon: "◎" },
-    { label: "Résumé", z: -29000, color: "#ffaa33", icon: "▣" },
-    { label: "Contact", z: -29000, color: "#ff4444", icon: "◈" },
+    { label: "Projects", z: -1500, x: 0, color: "#58d8ff", icon: "◆" },
+    { label: "Skills", z: -6000, x: 0, color: "#a066ff", icon: "◇" },
+    { label: "About Me", z: -28000, x: 0, color: "#ff8c6b", icon: "●" },
+    { label: "Timeline", z: -29000, x: -450, color: "#3dff99", icon: "◎" },
+    { label: "Résumé", z: -29000, x: 450, color: "#ffaa33", icon: "▣" },
+    { label: "Contact", z: -29000, x: 0, color: "#ff4444", icon: "◈" },
   ];
 
   return (
@@ -123,7 +123,7 @@ export function NebulaDashboard({ onWarp, visible }: NebulaDashboardProps) {
                 transition={{ delay: 0.1 + idx * 0.08, duration: 0.4 }}
                 whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onWarp(node.z)}
+                onClick={() => onWarp(node.z, node.x)}
                 className="group relative flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 overflow-hidden transition-colors"
               >
                 <div 

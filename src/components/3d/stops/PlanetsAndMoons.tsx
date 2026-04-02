@@ -97,7 +97,7 @@ export function CentralStar({
         onPointerEnter={() => onClick && (document.body.style.cursor = 'pointer')}
         onPointerLeave={() => (document.body.style.cursor = 'auto')}
       >
-        <sphereGeometry args={[80 * activityScale, 128, 128]} />
+        <sphereGeometry args={[80 * activityScale, 48, 48]} />
         <meshStandardMaterial
           color="#ffaa66"
           emissive="#ff6622"
@@ -117,7 +117,7 @@ export function CentralStar({
       />
 
       <mesh ref={glowRef}>
-        <sphereGeometry args={[140, 32, 32]} />
+        <sphereGeometry args={[140, 24, 24]} />
         <meshBasicMaterial
           color="#ff8844"
           transparent
@@ -315,7 +315,7 @@ export function ProjectPlanet({
         }}
         onClick={() => onClick(project)}
       >
-        <sphereGeometry args={[radius, 128, 128]} />
+        <sphereGeometry args={[radius, 48, 48]} />
         <meshStandardMaterial
           map={texture}
           color={project.planetColor}
@@ -328,7 +328,7 @@ export function ProjectPlanet({
 
       {/* Outer glow */}
       <mesh>
-        <sphereGeometry args={[radius * 1.12, 64, 64]} />
+        <sphereGeometry args={[radius * 1.12, 32, 32]} />
         <meshBasicMaterial
           color={project.planetColor}
           transparent
@@ -340,7 +340,7 @@ export function ProjectPlanet({
       {/* Ring system */}
       {data.detail === "ring" && (
         <mesh rotation={[Math.PI / 2.5, 0, 0]}>
-          <ringGeometry args={[radius * 1.3, radius * 2.0, 128]} />
+          <ringGeometry args={[radius * 1.3, radius * 2.0, 64]} />
           <meshStandardMaterial
             color={project.planetColor}
             emissive={project.planetColor}

@@ -273,6 +273,7 @@ export function CameraRig({
   const hudStateRef = useRef<string | null>(null);
   const introAlphaRef = useRef<number | null>(null);
   const camPosRef = useRef<string | null>(null);
+  const lastFovRef = useRef<number>((camera as THREE.PerspectiveCamera).fov || 75);
 
   useFrame(({ clock }, delta) => {
     const t = clock.elapsedTime;
@@ -411,8 +412,12 @@ export function CameraRig({
       stopFovRef.current,
       0.1,
     );
-    (camera as THREE.PerspectiveCamera).fov = fovRef.current;
-    (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    const newFov = fovRef.current;
+    if (Math.abs(newFov - lastFovRef.current) > 0.01) {
+      (camera as THREE.PerspectiveCamera).fov = newFov;
+      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+      lastFovRef.current = newFov;
+    }
 
     camera.rotation.z = isWarping ? Math.sin(t * 10) * 0.03 : 0;
 
@@ -469,10 +474,12 @@ export function CameraRig({
           dist: Math.round(minDist),
         };
 
-    // Deep compare to prevent runaway re-renders
-    const newHudStr = JSON.stringify(newHudState);
-    if (!hudStateRef.current || hudStateRef.current !== newHudStr) {
-      hudStateRef.current = newHudStr;
+    // Lightweight key compare instead of full JSON.stringify
+    const newHudKey = activeInfo
+      ? `near:${activeInfo.type}:${activeInfo.title}:${Math.round(minDist / 50)}`
+      : `approach:${approachingStop?.title ?? "null"}:${Math.round(minDist / 50)}`;
+    if (hudStateRef.current !== newHudKey) {
+      hudStateRef.current = newHudKey;
       setHudInfo(newHudState);
     }
 

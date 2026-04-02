@@ -3,19 +3,19 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ComlinkNavProps {
-  onWarp: (targetZ: number) => void;
+  onWarp: (targetZ: number, targetX?: number) => void;
   visible: boolean;
 }
 
 export function ComlinkNav({ onWarp, visible }: ComlinkNavProps) {
   const NODES = [
-    { id: "home", label: "HOME", z: 0, color: "#ffffff" },
-    { id: "projects", label: "PROJECTS", z: -1500, color: "#58d8ff" },
-    { id: "skills", label: "SKILLS", z: -6000, color: "#a066ff" },
-    { id: "about", label: "ABOUT", z: -28000, color: "#ff8c6b" },
-    { id: "timeline", label: "TIMELINE", z: -29000, color: "#3dff99" },
-    { id: "resume", label: "RÉSUMÉ", z: -29000, color: "#ffaa33" },
-    { id: "contact", label: "CONTACT", z: -29000, color: "#ff4444" },
+    { id: "home", label: "HOME", z: 0, x: 0, color: "#ffffff" },
+    { id: "projects", label: "PROJECTS", z: -1500, x: 0, color: "#58d8ff" },
+    { id: "skills", label: "SKILLS", z: -6000, x: 0, color: "#a066ff" },
+    { id: "about", label: "ABOUT", z: -28000, x: 0, color: "#ff8c6b" },
+    { id: "timeline", label: "TIMELINE", z: -29000, x: -450, color: "#3dff99" },
+    { id: "resume", label: "RÉSUMÉ", z: -29000, x: 450, color: "#ffaa33" },
+    { id: "contact", label: "CONTACT", z: -29000, x: 0, color: "#ff4444" },
   ];
 
   return (
@@ -32,7 +32,7 @@ export function ComlinkNav({ onWarp, visible }: ComlinkNavProps) {
             {NODES.map((n) => (
               <button
                 key={n.id}
-                onClick={() => onWarp(n.z)}
+                onClick={() => onWarp(n.z, n.x)}
                 className="group relative flex items-center justify-center px-3.5 py-1.5 rounded-full overflow-hidden transition-all duration-300 bg-white/5 hover:bg-white/10"
               >
                 <div 

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { IntroSequence } from "@/components/intro-sequence";
 import { NebulaDashboard } from "@/components/ui/NebulaDashboard";
 import { ComlinkNav } from "@/components/ui/ComlinkNav";
+import { SimplePortfolio } from "@/components/ui/SimplePortfolio";
 import { TOTAL_DISTANCE } from "@/components/3d/config";
 
 const SolarSystemCanvas = dynamic(
@@ -19,6 +20,7 @@ export default function HomePage() {
   const [commitData, setCommitData] = useState<CommitEntry[]>([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [introComplete, setIntroComplete] = useState(false);
+  const [showSimple, setShowSimple] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
   const [targetX, setTargetX] = useState(0);
   const [cameraPos, setCameraPos] = useState({ x: 0, y: 0, z: 0 });
@@ -89,7 +91,11 @@ export default function HomePage() {
         }
       }
       
-      setScrollProgress(currentPRef.current);
+      // Throttle React re-renders: only update if moved more than 0.0002 (prevents re-render every rAF)
+      const prev = scrollProgress;
+      if (Math.abs(currentPRef.current - prev) > 0.0002 || Math.abs(currentPRef.current - targetPRef.current) < 0.00005) {
+        setScrollProgress(currentPRef.current);
+      }
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
@@ -122,9 +128,19 @@ export default function HomePage() {
   return (
     <>
       {/* ── Intro sequence (video + loading) ── */}
-      {!introComplete && (
-        <IntroSequence onComplete={() => setIntroComplete(true)} />
+      {!introComplete && !showSimple && (
+        <IntroSequence
+          onComplete={() => setIntroComplete(true)}
+          onSimple={() => setShowSimple(true)}
+        />
       )}
+
+      {/* ── Simple Portfolio Mode ── */}
+      <AnimatePresence>
+        {showSimple && (
+          <SimplePortfolio onExit={() => { setShowSimple(false); setIntroComplete(true); }} />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {introComplete && scrollProgress < 0.0001 && (
@@ -195,30 +211,7 @@ export default function HomePage() {
           />
         </div>
 
-        {/* --- DEBUG SCROLL OVERLAY --- */}
-        <div className="fixed top-4 left-4 z-[100] px-3 py-1.5 rounded-lg bg-black/80 border border-white/10 backdrop-blur-md font-mono text-[10px] text-white/50 flex flex-col gap-1">
-          <div className="flex justify-between gap-4">
-            <span>SCROLL PX</span>
-            <span className="text-[#58d8ff] font-bold">{(scrollProgress * scrollHeight).toFixed(0)}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>PROGRESS</span>
-            <span className="text-[#a066ff] font-bold">{scrollProgress.toFixed(4)}</span>
-          </div>
-          <div className="h-px bg-white/5 my-0.5" />
-          <div className="flex justify-between gap-4">
-            <span>CAM X</span>
-            <span className="text-white/80">{cameraPos.x.toFixed(1)}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>CAM Y</span>
-            <span className="text-white/80">{cameraPos.y.toFixed(1)}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>CAM Z</span>
-            <span className="text-white/80">{cameraPos.z.toFixed(1)}</span>
-          </div>
-        </div>
+        {/* Debug overlay removed for production */}
       </div>
     </>
   );
